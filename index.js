@@ -51,15 +51,17 @@ http.createServer(function(req, res) {
         });
 
         // Once the file has been uploaded
-        form.on('end', function() {
+        form.on('end', function() { 
             myBucket.uploadAsync(newFilePath, {public: true}).then(file => {
+                const url = `https://storage.googleapis.com/${constants.BUCKET_NAME}/${newFileName}`
+
                 console.log('Done! Deleting local file.')
-                console.log(`Accessed as https://storage.googleapis.com/${constants.BUCKET_NAME}/${newFileName}`)
+                console.log('Accessed at: '+url)
 
                 // Delete it
                 fs.unlinkSync(newFilePath);
 
-                return200(res)
+                return200(res, url)
             })
             .catch(error => console.log(error))
         });
@@ -80,9 +82,13 @@ const return401 = (res) => {
     return res
 }
 
-const return200 = (res) => {
+const return200 = (res, url) => {
+    const body = JSON.stringify({
+        location: url
+    })
+
     res.writeHead(200, {'Content-Type': 'application/json'})
-    res.end()
+    res.end(body)
 
     return res
 }
